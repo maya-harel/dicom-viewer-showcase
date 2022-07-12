@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./config_files/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 3335:8042
+    depends_on:
+      - orthanc
+      - ohif
+
+  orthanc:
+    image: osimis/orthanc:latest
+    hostname: orthanc
+    environment:
+      ORTHANC__NAME: "OpenERSAI"
+      OSIMIS_WEB_VIEWER1_PLUGIN_ENABLED: "true"
+      ORTHANC_WEB_VIEWER_PLUGIN_ENABLED: "true"
+      # you must enable the StoneViewer and the DicomWeb plugins
+      STONE_WEB_VIEWER_PLUGIN_ENABLED: "true"
+      DICOM_WEB_PLUGIN_ENABLED: "true"
+      WSI_PLUGIN_ENABLED: "true"
+      # StoneViewer configurations
+      ORTHANC__STONE_WEB_VIEWER__DATE_FORMAT: "DD/MM/YYYY"
+      # Expected message origin should match the external url. * can be used as an insecure default
+      ORTHANC__STONE_WEB_VIEWER__EXPECTED_MESSAGE_ORIGIN" : "*"
+      ORTHANC__STONE_WEB_VIEWER__DICOM_CACHE_SIZE" : 250
+    volumes:
+      # Config
+      - ./config_files/orthanc.json:/etc/orthanc/orthanc.json:ro
+       # Persist data
+      - ./volumes/orthanc-db/:/var/lib/orthanc/db/
+    ports:
+      - 3337:8042 # Server
+      - 4242:4242 # DICOM
+    depends_on:
+      - db
+ 
+  ohif:
+    image: ohif/viewer:v4.12.30.19094
+    volumes:
+      - ./config_files/ohif.js:/usr/share/nginx/html/app-config.js:ro
+    ports:
+      - 8888:80
+    depends_on:
+      - orthanc
+
+volumes:
+  orthanc-data:
