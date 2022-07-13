@@ -38,7 +38,7 @@ services:
       - db
  
   ohif:
-    image: ohif/viewer:v4.12.30.19094
+    image: ohif/viewer:latest
     volumes:
       - ./config_files/ohif.js:/usr/share/nginx/html/app-config.js:ro
     ports:
